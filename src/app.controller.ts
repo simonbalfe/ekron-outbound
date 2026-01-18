@@ -17,7 +17,7 @@ export class AppController {
   @Get('test-call')
   async triggerCall(@Query('phone') phone: string) {
     if (!phone) {
-      return 'Please provide a phone number query parameter, e.g., /test-call?phone=+1234567890';
+      return 'Please provide  a phone number query parameter, e.g., /test-call?phone=+1234567890';
     }
     await this.twilioService.initiateCall(phone);
     return `Call initiated to ${phone}`;

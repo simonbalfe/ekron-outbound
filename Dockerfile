@@ -1,46 +1,15 @@
-FROM node:20-alpine AS builder
+FROM node:20
 
-# Enable pnpm
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+WORKDIR /usr/src/app
 
-WORKDIR /app
+COPY pnpm-lock.yaml* package.json* ./
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
-# Install dependencies (frozen-lockfile for consistency)
-RUN pnpm install --frozen-lockfile
-
-# Copy source code
 COPY . .
 
-# Build the application
-RUN pnpm run build
+RUN pnpm build
 
-# --- Production Stage ---
-FROM node:20-alpine AS runner
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
-
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
-
-# Copy built assets from builder
-COPY --from=builder /app/dist ./dist
-
-# Expose the application port
 EXPOSE 3000
 
-# Start the application
 CMD ["node", "dist/main"]
