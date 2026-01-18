@@ -29,6 +29,7 @@
     "@openrouter/ai-sdk-provider": "^1.5.4",
     "@types/mailparser": "^3.4.6",
     "ai": "^6.0.39",
+    "express": "^5.2.1",
     "imapflow": "^1.2.6",
     "mailparser": "^3.9.1",
     "reflect-metadata": "^0.2.2",
