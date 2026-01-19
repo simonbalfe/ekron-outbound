@@ -10,6 +10,6 @@ COPY . .
 
 RUN pnpm build
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["node", "dist/main"]

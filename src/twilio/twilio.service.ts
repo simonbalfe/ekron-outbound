@@ -114,7 +114,7 @@ export class TwilioService {
 
   async registerRetellCall(callSid: string, direction: 'inbound' | 'outbound' = 'inbound'): Promise<string> {
     if (this.callCache.has(callSid)) {
-      this.logger.log(`Returning cached Retell call ID for CallSid: ${callSid}`);
+      this.logger.log(`Returning cached Retell call  ID for CallSid: ${callSid}`);
       return this.callCache.get(callSid)?.callId || '';
     }
     const agentId = this.configService.get<string>('RETELL_AGENT_ID');
