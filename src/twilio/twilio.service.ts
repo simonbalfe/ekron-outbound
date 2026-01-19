@@ -146,6 +146,11 @@ export class TwilioService {
   }
 
   isBusinessHours(): boolean {
+    const useBusinessHours = this.configService.get<string>('USE_BUSINESS_HOURS') === 'true';
+    if (!useBusinessHours) {
+      return true;
+    }
+
     const now = new Date();
     const day = now.getDay(); // 0 is Sunday, 6 is Saturday
     const hour = now.getHours();
