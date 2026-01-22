@@ -39,11 +39,11 @@ export class TwilioController {
     this.logger.log(`Full Request Body: ${JSON.stringify(body, null, 2)}`);
     
     const response = new twiml.VoiceResponse();
-    const isBusinessHours = this.twilioService.isBusinessHours();
+    const shouldRouteToAI = this.twilioService.shouldRouteToAI();
 
-    this.logger.log(`Checking Business Hours... Result: ${isBusinessHours}`);
+    this.logger.log(`Should route to AI: ${shouldRouteToAI}`);
 
-    if (isBusinessHours) {
+    if (shouldRouteToAI) {
       try {
         const callId = await this.twilioService.registerRetellCall(body.CallSid, 'inbound');
         
@@ -51,10 +51,9 @@ export class TwilioController {
         dial.sip(`sip:${callId}@sip.retellai.com`); 
       } catch (error) {
         this.logger.error('Failed to route to Retell AI.', error.stack);
-        this.dialPhoneNumber(response);
       }
     } else {
-      this.logger.log('After hours detected. Routing to backup phone number.');
+      this.logger.log('In-hours detected. Routing to human agent.');
       this.dialPhoneNumber(response);
     }
 

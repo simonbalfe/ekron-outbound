@@ -145,21 +145,24 @@ export class TwilioService {
     return this.configService.get<string>('AGENT_PHONE_BACKUP') || '';
   }
 
-  isBusinessHours(): boolean {
+  shouldRouteToAI(): boolean {
     const useBusinessHours = this.configService.get<string>('USE_BUSINESS_HOURS') === 'true';
     if (!useBusinessHours) {
-      return true;
+      return true; // Always AI if business hours check is disabled
     }
 
     const now = new Date();
-    const day = now.getDay(); // 0 is Sunday, 6 is Saturday
+    const day = now.getDay();
     const hour = now.getHours();
 
-    // Monday to Friday, 9am to 5pm
     const isWeekday = day >= 1 && day <= 5;
     const isWorkingHours = hour >= 9 && hour < 17;
 
-    return isWeekday && isWorkingHours;
+    const isBusinessHours = isWeekday && isWorkingHours;
+    
+    // If it's business hours, return false (route to human)
+    // If it's after hours, return true (route to AI)
+    return !isBusinessHours;
   }
 
 
