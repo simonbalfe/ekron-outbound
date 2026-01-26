@@ -112,9 +112,14 @@ export class TwilioService {
     }, 120000);
   }
 
-  async registerRetellCall(callSid: string, direction: 'inbound' | 'outbound' = 'inbound'): Promise<string> {
+  async registerRetellCall(
+    callSid: string,
+    direction: 'inbound' | 'outbound' = 'inbound',
+    fromNumber?: string,
+    toNumber?: string,
+  ): Promise<string> {
     if (this.callCache.has(callSid)) {
-      this.logger.log(`Returning cached Retell call  ID for CallSid: ${callSid}`);
+      this.logger.log(`Returning cached Retell call ID for CallSid: ${callSid}`);
       return this.callCache.get(callSid)?.callId || '';
     }
     const agentId = this.configService.get<string>('RETELL_AGENT_ID');
@@ -125,10 +130,15 @@ export class TwilioService {
         const phoneCallResponse = await this.retellClient.call.registerPhoneCall({
             agent_id: agentId,
             direction: direction,
+            from_number: fromNumber,
+            to_number: toNumber,
+            retell_llm_dynamic_variables: {
+              caller_number: fromNumber || '',
+            },
         });
         
         const callId = phoneCallResponse.call_id;
-        this.logger.log(`Retell call registered. Call ID: ${callId}`);
+        this.logger.log(`Retell call registered. Call ID: ${callId}, From: ${fromNumber}, To: ${toNumber}`);
         this.callCache.set(callSid, { callId, timestamp: Date.now() });
         return callId;
     } catch (error) {

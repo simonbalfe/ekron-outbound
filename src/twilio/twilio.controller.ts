@@ -21,12 +21,12 @@ export class TwilioController {
 
     if (shouldRouteToAI) {
       try {
-        const callId = await this.twilioService.registerRetellCall(body.CallSid, 'inbound');
-        const callerNumber = body.From || '';
+        const fromNumber = body.From || '';
+        const toNumber = body.To || '';
+        const callId = await this.twilioService.registerRetellCall(body.CallSid, 'inbound', fromNumber, toNumber);
         
         const dial = response.dial();
-        const encodedCallerNumber = encodeURIComponent(callerNumber);
-        dial.sip(`sip:${callId}@sip.retellai.com;X-Caller-Number=${encodedCallerNumber}`); 
+        dial.sip(`sip:${callId}@sip.retellai.com`); 
       } catch (error) {
         this.logger.error('Failed to route to Retell AI.', error.stack);
       }
