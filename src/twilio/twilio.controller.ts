@@ -1,37 +1,13 @@
-import { Controller, Post, Body, Res, HttpCode, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Res, Logger } from '@nestjs/common';
 import * as express from 'express';
 import { twiml } from 'twilio';
 import { TwilioService } from './twilio.service';
-
-interface TransferResultBody {
-  DialCallStatus: string;
-}
-
-interface CallStatusBody {
-  CallStatus: string;
-  To: string;
-}
 
 @Controller('twilio')
 export class TwilioController {
   private readonly logger = new Logger(TwilioController.name);
 
   constructor(private twilioService: TwilioService) {}
-
-  @Post('call-status')
-  @HttpCode(200)
-  callStatus(@Body() body: CallStatusBody): void {
-    this.logger.log(`Received webhook: /call-status. Status: ${body.CallStatus}, To: ${body.To}`);
-    
-    if (body.CallStatus === 'no-answer') {
-      this.logger.warn(`Call was not answered by lead ${body.To}. Triggering retry logic.`);
-      this.twilioService.scheduleRetry(body.To);
-    } else if (body.CallStatus === 'completed') {
-      this.logger.log(`Call completed successfully.`);
-    } else if (body.CallStatus === 'failed' || body.CallStatus === 'busy') {
-      this.logger.warn(`Call failed or busy. Status: ${body.CallStatus}`);
-    }
-  }
 
   @Post('router')
   async router(@Body() body: any, @Res() res: express.Response): Promise<void> {
@@ -46,9 +22,11 @@ export class TwilioController {
     if (shouldRouteToAI) {
       try {
         const callId = await this.twilioService.registerRetellCall(body.CallSid, 'inbound');
+        const callerNumber = body.From || '';
         
         const dial = response.dial();
-        dial.sip(`sip:${callId}@sip.retellai.com`); 
+        const encodedCallerNumber = encodeURIComponent(callerNumber);
+        dial.sip(`sip:${callId}@sip.retellai.com;X-Caller-Number=${encodedCallerNumber}`); 
       } catch (error) {
         this.logger.error('Failed to route to Retell AI.', error.stack);
       }

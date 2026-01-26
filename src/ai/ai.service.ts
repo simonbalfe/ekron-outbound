@@ -25,7 +25,6 @@ export class AiService {
     this.logger.log('Parsing email for qualification and phone number extraction...');
 
     try {
-      // Using a model supported by OpenRouter
       const model = this.openrouter('openai/gpt-4o'); 
 
       const { output } = await generateText({
