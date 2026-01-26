@@ -127,22 +127,21 @@ export class TwilioService {
        throw new Error('Retell client or Agent ID not configured');
     }
     try {
+        this.logger.log(`Registering Retell call: agent_id=${agentId}, direction=${direction}, from_number=${fromNumber}, to_number=${toNumber}`);
+        
         const phoneCallResponse = await this.retellClient.call.registerPhoneCall({
             agent_id: agentId,
-            direction: direction,
             from_number: fromNumber,
             to_number: toNumber,
-            retell_llm_dynamic_variables: {
-              caller_number: fromNumber || '',
-            },
+            direction: direction,
         });
         
         const callId = phoneCallResponse.call_id;
-        this.logger.log(`Retell call registered. Call ID: ${callId}, From: ${fromNumber}, To: ${toNumber}`);
+        this.logger.log(`Retell call registered successfully. Call ID: ${callId}`);
         this.callCache.set(callSid, { callId, timestamp: Date.now() });
         return callId;
     } catch (error) {
-        this.logger.error('Failed to register call with Retell SDK', error);
+        this.logger.error(`Failed to register Retell call: agent_id=${agentId}, from_number=${fromNumber}, to_number=${toNumber}`, error);
         throw error;
     }
   }
