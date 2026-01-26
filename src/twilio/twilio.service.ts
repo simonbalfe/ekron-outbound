@@ -157,21 +157,27 @@ export class TwilioService {
   shouldRouteToAI(): boolean {
     const useBusinessHours = this.configService.get<string>('USE_BUSINESS_HOURS') === 'true';
     if (!useBusinessHours) {
-      return true; // Always AI if business hours check is disabled
+      return true;
     }
 
     const now = new Date();
     const day = now.getDay();
     const hour = now.getHours();
 
-    const isWeekday = day >= 1 && day <= 5;
-    const isWorkingHours = hour >= 9 && hour < 17;
-
-    const isBusinessHours = isWeekday && isWorkingHours;
+    const isBusinessHours = this.isWithinBusinessHours(day, hour);
     
-    // If it's business hours, return false (route to human)
-    // If it's after hours, return true (route to AI)
     return !isBusinessHours;
+  }
+
+  private isWithinBusinessHours(day: number, hour: number): boolean {
+    switch (day) {
+      case 0:
+        return false;
+      case 6:
+        return hour >= 8 && hour < 13;
+      default:
+        return hour >= 8 && hour < 16;
+    }
   }
 
 
