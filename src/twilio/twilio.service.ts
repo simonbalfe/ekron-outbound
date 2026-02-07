@@ -29,11 +29,10 @@ export class TwilioService {
         this.retellClient = new Retell({ apiKey: retellApiKey });
     }
 
-    // Clean up cache periodically (every hour)
     setInterval(() => {
       const now = Date.now();
       for (const [key, value] of this.callCache.entries()) {
-        if (now - value.timestamp > 3600000) { // 1 hour
+        if (now - value.timestamp > 3600000) { 
           this.callCache.delete(key);
         }
       }
