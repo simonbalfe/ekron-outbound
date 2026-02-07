@@ -75,7 +75,7 @@ export class TwilioService {
         from: twilioNumber,
         url: scriptUrl,
         statusCallback: statusCallbackUrl,
-        machineDetection: 'Enable', // Enable Answering Machine Detection
+        machineDetection: 'Enable', 
       });
       this.logger.log(`Call successfully queued with Twilio for ${leadPhone}`);
     } catch (error) {

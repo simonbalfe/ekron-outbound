@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "knip": "knip"
+    "knip": "knip",
+    "ngrok": "ngrok http 3000"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.12",
@@ -33,6 +34,7 @@
     "imapflow": "^1.2.6",
     "mailparser": "^3.9.1",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.9.1",
     "retell-sdk": "^4.66.0",
     "rxjs": "^7.8.2",
     "twilio": "^5.11.2",
