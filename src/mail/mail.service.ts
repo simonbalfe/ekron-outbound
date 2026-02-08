@@ -15,8 +15,12 @@ export class MailService {
     this.resend = new Resend(
       this.configService.getOrThrow<string>('RESEND_API_KEY'),
     );
-    this.notificationRecipient = 'sbmain17@gmail.com';
-    this.senderAddress = 'admin@vocalbeam.com';
+    this.notificationRecipient = this.configService.getOrThrow<string>(
+      'NOTIFICATION_RECIPIENT_EMAIL',
+    );
+    this.senderAddress = this.configService.getOrThrow<string>(
+      'SENDER_EMAIL_ADDRESS',
+    );
   }
 
   async sendCallNotification(

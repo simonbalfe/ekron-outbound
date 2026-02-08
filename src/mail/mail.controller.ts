@@ -13,9 +13,8 @@ export class MailController {
   async retellSendEmail(
     @Body() body: RetellEmailTypes.RetellEmailWebhookPayload,
   ): Promise<{ success: boolean }> {
-
-    const { caller_number } = body.call.retell_llm_dynamic_variables;
-    const { outcome } = body.args;
+    const caller_number = body.call.retell_llm_dynamic_variables.caller_number;
+    const outcome = body.args.outcome;
 
     this.logger.log(
       `Retell email webhook: caller=${caller_number}, outcome=${outcome}`,

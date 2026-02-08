@@ -17,25 +17,7 @@ export interface RetellInboundWebhookResponse {
   call_inbound?: RetellInboundWebhookResponseCallData;
 }
 
-export interface RetellTelephonyIdentifier {
-  twilio_call_sid: string;
-}
-
-export interface RetellCallData {
-  call_id: string;
-  telephony_identifier: RetellTelephonyIdentifier;
-  custom_sip_headers?: Record<string, string>;
-}
-
-export interface RetellTransferWebhookPayload {
-  call: RetellCallData;
-  name: string;
-  args: {
-    call_id: string;
-  };
-}
-
-export type RetellDisconnectionReason =
+type RetellDisconnectionReason =
   | 'user_hangup'
   | 'agent_hangup'
   | 'call_transfer'

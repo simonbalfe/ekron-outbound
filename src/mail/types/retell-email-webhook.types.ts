@@ -4,7 +4,7 @@ export type CallOutcome =
   | 'human_no_answer_forwarded_ai'
   | 'transferred_to_human';
 
-export interface SendEmailDynamicVariables {
+interface SendEmailDynamicVariables {
   caller_number: string;
 }
 
