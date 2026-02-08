@@ -23,11 +23,14 @@ export class TwilioController {
       const { from_number, to_number } = body.call_inbound;
       this.logger.log(`Inbound call from ${from_number} to ${to_number}`);
 
+      const routeToAI = this.twilioService.shouldRouteToAI();
+      this.logger.log(`Route to AI result: ${routeToAI}`);
+
       return {
         call_inbound: {
           dynamic_variables: {
             caller_number: from_number,
-            route_to_ai: String(!this.twilioService.shouldRouteToAI()),
+            route_to_ai: String(routeToAI),
           },
           metadata: {
             source: 'inbound_webhook',
