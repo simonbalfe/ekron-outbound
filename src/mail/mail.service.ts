@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
-type CallOutcome = 'connected_human' | 'connected_ai' | 'human_no_answer_forwarded_ai';
+import { CallOutcome } from './types/retell-email-webhook.types';
 
 @Injectable()
 export class MailService {
@@ -15,7 +15,7 @@ export class MailService {
     this.resend = new Resend(
       this.configService.getOrThrow<string>('RESEND_API_KEY'),
     );
-    this.notificationRecipient = 'simon@simonbalfe.com';
+    this.notificationRecipient = 'sbmain17@gmail.com';
     this.senderAddress = 'admin@vocalbeam.com';
   }
 
@@ -45,7 +45,7 @@ export class MailService {
     const timestamp = new Date().toLocaleString('en-GB', {
       timeZone: 'Europe/London',
     });
-
+    console.log('outcome', outcome);
     switch (outcome) {
       case 'connected_human':
         return {
@@ -77,6 +77,17 @@ export class MailService {
             <p><strong>Caller:</strong> ${callerNumber}</p>
             <p><strong>Time:</strong> ${timestamp}</p>
             <p><strong>Status:</strong> Human agent did not answer. Call was automatically forwarded to AI agent.</p>
+          `),
+        };
+
+      case 'transferred_to_human':
+        return {
+          subject: `Call Transferred to Human Agent - ${callerNumber}`,
+          body: this.wrapHtml(`
+            <h2>Call Transferred from AI to Human Agent</h2>
+            <p><strong>Caller:</strong> ${callerNumber}</p>
+            <p><strong>Time:</strong> ${timestamp}</p>
+            <p><strong>Status:</strong> AI agent transferred the call to a human agent.</p>
           `),
         };
     }
