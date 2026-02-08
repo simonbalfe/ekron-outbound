@@ -2,24 +2,28 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
+import { buildContactRequestHtml } from './templates/contact-request.template';
+import { buildSurveyorNotesHtml } from './templates/surveyor-notes.template';
+import { ContactEmailArgs } from './types/contact-email.types';
 import { CallOutcome } from './types/retell-email-webhook.types';
+import { SurveyorEmailArgs } from './types/surveyor-email.types';
 
 @Injectable()
 export class MailService {
   private resend: Resend;
   private readonly logger = new Logger(MailService.name);
-  private readonly notificationRecipient: string;
+  private readonly recipientAddress: string;
   private readonly senderAddress: string;
 
   constructor(private configService: ConfigService) {
     this.resend = new Resend(
       this.configService.getOrThrow<string>('RESEND_API_KEY'),
     );
-    this.notificationRecipient = this.configService.getOrThrow<string>(
-      'NOTIFICATION_RECIPIENT_EMAIL',
+    this.recipientAddress = this.configService.getOrThrow<string>(
+      'RECIPIENT_EMAIL',
     );
     this.senderAddress = this.configService.getOrThrow<string>(
-      'SENDER_EMAIL_ADDRESS',
+      'SENDER_EMAIL',
     );
   }
 
@@ -32,7 +36,7 @@ export class MailService {
     try {
       await this.resend.emails.send({
         from: this.senderAddress,
-        to: this.notificationRecipient,
+        to: this.recipientAddress,
         subject,
         html: body,
       });
@@ -94,6 +98,40 @@ export class MailService {
             <p><strong>Status:</strong> AI agent transferred the call to a human agent.</p>
           `),
         };
+    }
+  }
+
+  async sendContactEmail(args: ContactEmailArgs): Promise<void> {
+    const html = buildContactRequestHtml(args);
+
+    try {
+      await this.resend.emails.send({
+        from: this.senderAddress,
+        to: this.recipientAddress,
+        subject: args.subject,
+        html,
+      });
+      this.logger.log(`Contact email sent: ${args.name} - ${args.phone}`);
+    } catch (error) {
+      this.logger.error(`Failed to send contact email for ${args.name}`, error);
+      throw error;
+    }
+  }
+
+  async sendSurveyorEmail(args: SurveyorEmailArgs): Promise<void> {
+    const html = buildSurveyorNotesHtml(args);
+
+    try {
+      await this.resend.emails.send({
+        from: this.senderAddress,
+        to: this.recipientAddress,
+        subject: args.subject,
+        html,
+      });
+      this.logger.log(`Surveyor email sent: ${args.phone}`);
+    } catch (error) {
+      this.logger.error(`Failed to send surveyor email for ${args.phone}`, error);
+      throw error;
     }
   }
 
