@@ -1,55 +1,47 @@
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
-import * as fs from 'fs';
-import * as path from 'path';
 
-function loadDotenvKeys(): string[] {
-  const dotenvPath = path.resolve(process.cwd(), '.env');
-  if (!fs.existsSync(dotenvPath)) {
-    return [];
-  }
-  const lines = fs.readFileSync(dotenvPath, 'utf8').split('\n');
-  const keys: string[] = [];
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) {
+const SENSITIVE_PATTERNS = ['PASSWORD', 'SECRET', 'TOKEN', 'KEY'];
+
+const ENV_KEYS = [
+  'PORT',
+  'RESEND_API_KEY',
+  'RECIPIENT_EMAIL',
+  'SENDER_EMAIL',
+  'TWILIO_ACCOUNT_SID',
+  'TWILIO_AUTH_TOKEN',
+  'USE_BUSINESS_HOURS',
+];
+
+function logEnvironmentVariables(logger: Logger): void {
+  logger.log('--- Environment Variables ---');
+  for (const key of ENV_KEYS) {
+    const rawValue = process.env[key];
+    if (rawValue === undefined) {
+      logger.warn(`${key}: NOT SET`);
       continue;
     }
-    const eqIndex = trimmed.indexOf('=');
-    if (eqIndex === -1) {
-      continue;
-    }
-    const key = trimmed.slice(0, eqIndex).trim();
-    if (key) {
-      keys.push(key);
-    }
+    const isSensitive = SENSITIVE_PATTERNS.some((pattern) =>
+      key.includes(pattern),
+    );
+    const displayValue = isSensitive ? '********' : rawValue;
+    logger.log(`${key}: ${displayValue}`);
   }
-  return keys;
+  logger.log('-----------------------------');
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
   app.enableCors();
 
-  const dotenvKeys = loadDotenvKeys();
-  console.log('--- .env Variables ---');
-  dotenvKeys
-    .sort()
-    .forEach((key) => {
-      if (typeof process.env[key] === 'string') {
-        const isSensitive =
-          key.includes('PASSWORD') ||
-          key.includes('SECRET') ||
-          key.includes('TOKEN') ||
-          key.includes('KEY');
-        const value = isSensitive
-          ? (process.env[key] ? '********' : 'NOT SET')
-          : process.env[key];
-        console.log(`${key}: ${value}`);
-      }
-    });
-  console.log('----------------------');
+  const logger = new Logger('Bootstrap');
+  logEnvironmentVariables(logger);
 
-  await app.listen(process.env.PORT!);
+  const port = process.env.PORT!;
+  await app.listen(port);
+  logger.log(`Application listening on port ${port}`);
 }
 bootstrap();
