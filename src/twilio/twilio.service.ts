@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Twilio } from 'twilio';
 
 @Injectable()
 export class TwilioService {
-  private client: Twilio;
   private readonly logger = new Logger(TwilioService.name);
 
   constructor(private configService: ConfigService) {
@@ -16,8 +14,6 @@ export class TwilioService {
     if (!accountSid || !authToken) {
       this.logger.warn('Twilio credentials not configured');
     }
-
-    this.client = new Twilio(accountSid, authToken);
   }
 
   shouldRouteToAI(): boolean {

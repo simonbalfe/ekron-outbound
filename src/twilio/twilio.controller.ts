@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Res, Logger, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Logger,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import * as express from 'express';
 import { MailService } from '../mail/mail.service';
 import { TwilioService } from './twilio.service';
@@ -17,7 +26,9 @@ export class TwilioController {
   async retellInbound(
     @Body() body: RetellTypes.RetellInboundWebhookPayload,
   ): Promise<RetellTypes.RetellInboundWebhookResponse> {
-    this.logger.log(`Retell inbound webhook: event=${body.event}`);
+    this.logger.log(
+      `Retell inbound webhook body: ${JSON.stringify(body, null, 2)}`,
+    );
 
     if (body.event === 'call_inbound' && body.call_inbound) {
       const { from_number, to_number } = body.call_inbound;
@@ -48,10 +59,15 @@ export class TwilioController {
   async retellCallEnded(
     @Body() body: RetellTypes.RetellCallEndedWebhookPayload,
   ): Promise<void> {
-    this.logger.log(`Retell call ended: reason=${body.call.disconnection_reason}`);
+    this.logger.log(
+      `Retell call ended: reason=${body.call.disconnection_reason}`,
+    );
 
     if (body.call.disconnection_reason === 'call_transfer') {
-      this.mailService.sendCallNotification(body.call.from_number, 'transferred_to_human');
+      this.mailService.sendCallNotification(
+        body.call.from_number,
+        'transferred_to_human',
+      );
     }
   }
 
