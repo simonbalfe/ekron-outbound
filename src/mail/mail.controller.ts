@@ -15,7 +15,8 @@ export class MailController {
   async retellSendEmail(
     @Body() body: RetellEmailTypes.RetellEmailWebhookPayload,
   ): Promise<{ success: boolean }> {
-    const caller_number = body.call.retell_llm_dynamic_variables.caller_number;
+    const caller_number =
+      body.call.retell_llm_dynamic_variables?.caller_number ?? '+0000000000';
     const outcome = body.args.outcome;
 
     this.logger.log(
@@ -46,9 +47,7 @@ export class MailController {
   async sendSurveyorEmail(
     @Body() body: SurveyorEmailTypes.SurveyorEmailWebhookPayload,
   ): Promise<{ success: boolean }> {
-    this.logger.log(
-      `Surveyor email webhook: phone=${body.args.phone}`,
-    );
+    this.logger.log(`Surveyor email webhook: phone=${body.args.phone}`);
 
     await this.mailService.sendSurveyorEmail(body.args);
 
