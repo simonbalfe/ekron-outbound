@@ -33,11 +33,16 @@ export class MailController {
   async sendContactEmail(
     @Body() body: ContactEmailTypes.ContactEmailWebhookPayload,
   ): Promise<{ success: boolean }> {
-    this.logger.log(
-      `Contact email webhook: name=${body.args.name}, phone=${body.args.phone}`,
-    );
+    const name = body.args?.name ?? 'Unknown';
+    const phone = body.args?.phone ?? '+0000000000';
 
-    await this.mailService.sendContactEmail(body.args);
+    this.logger.log(`Contact email webhook: name=${name}, phone=${phone}`);
+
+    await this.mailService.sendContactEmail({
+      ...body.args,
+      name,
+      phone,
+    });
 
     return { success: true };
   }
@@ -47,9 +52,14 @@ export class MailController {
   async sendSurveyorEmail(
     @Body() body: SurveyorEmailTypes.SurveyorEmailWebhookPayload,
   ): Promise<{ success: boolean }> {
-    this.logger.log(`Surveyor email webhook: phone=${body.args.phone}`);
+    const phone = body.args?.phone ?? '+0000000000';
 
-    await this.mailService.sendSurveyorEmail(body.args);
+    this.logger.log(`Surveyor email webhook: phone=${phone}`);
+
+    await this.mailService.sendSurveyorEmail({
+      ...body.args,
+      phone,
+    });
 
     return { success: true };
   }
