@@ -98,6 +98,17 @@ export class MailService {
             <p><strong>Status:</strong> AI agent transferred the call to a human agent.</p>
           `),
         };
+
+      case 'user_hangup':
+        return {
+          subject: `Caller Hung Up - ${callerNumber}`,
+          body: this.wrapHtml(`
+            <h2>Caller Hung Up</h2>
+            <p><strong>Caller:</strong> ${callerNumber}</p>
+            <p><strong>Time:</strong> ${timestamp}</p>
+            <p><strong>Status:</strong> The caller hung up the call.</p>
+          `),
+        };
     }
   }
 

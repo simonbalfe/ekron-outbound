@@ -2,7 +2,8 @@ export type CallOutcome =
   | 'connected_human'
   | 'connected_ai'
   | 'human_no_answer_forwarded_ai'
-  | 'transferred_to_human';
+  | 'transferred_to_human'
+  | 'user_hangup';
 
 interface SendEmailDynamicVariables {
   caller_number: string;

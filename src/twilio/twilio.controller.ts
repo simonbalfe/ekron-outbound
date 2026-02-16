@@ -64,9 +64,16 @@ export class TwilioController {
     );
 
     if (body.call.disconnection_reason === 'call_transfer') {
-      this.mailService.sendCallNotification(
+      await this.mailService.sendCallNotification(
         body.call.from_number,
         'transferred_to_human',
+      );
+    }
+
+    if (body.call.disconnection_reason === 'user_hangup') {
+      await this.mailService.sendCallNotification(
+        body.call.from_number,
+        'user_hangup',
       );
     }
   }
