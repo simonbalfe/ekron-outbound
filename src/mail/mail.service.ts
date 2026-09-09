@@ -4,9 +4,14 @@ import { Resend } from 'resend';
 
 import { buildContactRequestHtml } from './templates/contact-request.template';
 import { buildSurveyorNotesHtml } from './templates/surveyor-notes.template';
-import { ContactEmailArgs } from './types/contact-email.types';
-import { CallOutcome } from './types/retell-email-webhook.types';
-import { SurveyorEmailArgs } from './types/surveyor-email.types';
+import type { ContactEmailArgs } from './types/contact-email.types';
+import type { CallOutcome } from './types/retell-email-webhook.types';
+import type { SurveyorEmailArgs } from './types/surveyor-email.types';
+
+function assertNever(value: never): never {
+  void value;
+  throw new Error('Unsupported call outcome');
+}
 
 @Injectable()
 export class MailService {
@@ -19,12 +24,9 @@ export class MailService {
     this.resend = new Resend(
       this.configService.getOrThrow<string>('RESEND_API_KEY'),
     );
-    this.recipientAddress = this.configService.getOrThrow<string>(
-      'RECIPIENT_EMAIL',
-    );
-    this.senderAddress = this.configService.getOrThrow<string>(
-      'SENDER_EMAIL',
-    );
+    this.recipientAddress =
+      this.configService.getOrThrow<string>('RECIPIENT_EMAIL');
+    this.senderAddress = this.configService.getOrThrow<string>('SENDER_EMAIL');
   }
 
   async sendCallNotification(
@@ -40,9 +42,14 @@ export class MailService {
         subject,
         html: body,
       });
-      this.logger.log(`Call notification email sent: ${outcome} for ${callerNumber}`);
+      this.logger.log(
+        `Call notification email sent: ${outcome} for ${callerNumber}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send call notification email for ${callerNumber}`, error);
+      this.logger.error(
+        `Failed to send call notification email for ${callerNumber}`,
+        error,
+      );
     }
   }
 
@@ -109,6 +116,9 @@ export class MailService {
             <p><strong>Status:</strong> The caller hung up the call.</p>
           `),
         };
+
+      default:
+        return assertNever(outcome);
     }
   }
 
@@ -141,7 +151,10 @@ export class MailService {
       });
       this.logger.log(`Surveyor email sent: ${args.phone}`);
     } catch (error) {
-      this.logger.error(`Failed to send surveyor email for ${args.phone}`, error);
+      this.logger.error(
+        `Failed to send surveyor email for ${args.phone}`,
+        error,
+      );
       throw error;
     }
   }
