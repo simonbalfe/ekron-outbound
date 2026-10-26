@@ -6,7 +6,8 @@ const SENSITIVE_PATTERNS = ['PASSWORD', 'SECRET', 'TOKEN', 'KEY'];
 
 const ENV_KEYS = [
   'PORT',
-  'RESEND_API_KEY',
+  'CLOUDFLARE_ACCOUNT_ID',
+  'CLOUDFLARE_EMAIL_API_TOKEN',
   'RECIPIENT_EMAIL',
   'SENDER_EMAIL',
   'TWILIO_ACCOUNT_SID',
@@ -44,4 +45,4 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`Application listening on port ${port}`);
 }
-bootstrap();
+void bootstrap();

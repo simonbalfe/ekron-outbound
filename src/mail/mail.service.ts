@@ -1,12 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
 
 import { buildContactRequestHtml } from './templates/contact-request.template';
 import { buildSurveyorNotesHtml } from './templates/surveyor-notes.template';
 import type { ContactEmailArgs } from './types/contact-email.types';
 import type { CallOutcome } from './types/retell-email-webhook.types';
 import type { SurveyorEmailArgs } from './types/surveyor-email.types';
+
+interface CloudflareSendResult {
+  delivered: string[];
+  permanent_bounces: string[];
+  queued: string[];
+}
+
+interface CloudflareSendResponse {
+  success: boolean;
+  errors: { code: number; message: string }[];
+  result: CloudflareSendResult | null;
+}
 
 function assertNever(value: never): never {
   void value;
@@ -15,18 +26,54 @@ function assertNever(value: never): never {
 
 @Injectable()
 export class MailService {
-  private resend: Resend;
   private readonly logger = new Logger(MailService.name);
+  private readonly sendEndpoint: string;
+  private readonly apiToken: string;
   private readonly recipientAddress: string;
   private readonly senderAddress: string;
 
   constructor(private configService: ConfigService) {
-    this.resend = new Resend(
-      this.configService.getOrThrow<string>('RESEND_API_KEY'),
+    const accountId = this.configService.getOrThrow<string>(
+      'CLOUDFLARE_ACCOUNT_ID',
+    );
+    this.sendEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/email/sending/send`;
+    this.apiToken = this.configService.getOrThrow<string>(
+      'CLOUDFLARE_EMAIL_API_TOKEN',
     );
     this.recipientAddress =
       this.configService.getOrThrow<string>('RECIPIENT_EMAIL');
     this.senderAddress = this.configService.getOrThrow<string>('SENDER_EMAIL');
+  }
+
+  private async send(subject: string, html: string): Promise<void> {
+    const response = await fetch(this.sendEndpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.apiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: this.senderAddress,
+        to: this.recipientAddress,
+        subject,
+        html,
+      }),
+    });
+    const body = await response.text();
+    if (!response.ok) {
+      throw new Error(
+        `Cloudflare email send failed (${response.status}): ${body}`,
+      );
+    }
+    const parsed = JSON.parse(body) as CloudflareSendResponse;
+    if (!parsed.success || !parsed.result) {
+      throw new Error(`Cloudflare email send failed: ${body}`);
+    }
+    if (parsed.result.permanent_bounces.length > 0) {
+      throw new Error(
+        `Cloudflare email permanently bounced: ${parsed.result.permanent_bounces.join(', ')}`,
+      );
+    }
   }
 
   async sendCallNotification(
@@ -36,12 +83,7 @@ export class MailService {
     const { subject, body } = this.buildCallEmail(callerNumber, outcome);
 
     try {
-      await this.resend.emails.send({
-        from: this.senderAddress,
-        to: this.recipientAddress,
-        subject,
-        html: body,
-      });
+      await this.send(subject, body);
       this.logger.log(
         `Call notification email sent: ${outcome} for ${callerNumber}`,
       );
@@ -126,12 +168,7 @@ export class MailService {
     const html = buildContactRequestHtml(args);
 
     try {
-      await this.resend.emails.send({
-        from: this.senderAddress,
-        to: this.recipientAddress,
-        subject: args.subject,
-        html,
-      });
+      await this.send(args.subject, html);
       this.logger.log(`Contact email sent: ${args.name} - ${args.phone}`);
     } catch (error) {
       this.logger.error(`Failed to send contact email for ${args.name}`, error);
@@ -143,12 +180,7 @@ export class MailService {
     const html = buildSurveyorNotesHtml(args);
 
     try {
-      await this.resend.emails.send({
-        from: this.senderAddress,
-        to: this.recipientAddress,
-        subject: args.subject,
-        html,
-      });
+      await this.send(args.subject, html);
       this.logger.log(`Surveyor email sent: ${args.phone}`);
     } catch (error) {
       this.logger.error(
