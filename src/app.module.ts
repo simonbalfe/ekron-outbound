@@ -13,6 +13,6 @@ import { TwilioModule } from './twilio/twilio.module';
       rootPath: join(__dirname, '..', 'public'),
     }),
     TwilioModule,
-  ]
+  ],
 })
 export class AppModule {}

@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  Logger,
-  HttpCode,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Body, Res, Logger, HttpCode } from '@nestjs/common';
 import * as express from 'express';
 import { MailService } from '../mail/mail.service';
 import { TwilioService } from './twilio.service';
@@ -23,9 +14,9 @@ export class TwilioController {
   ) {}
 
   @Post('retell-inbound')
-  async retellInbound(
+  retellInbound(
     @Body() body: RetellTypes.RetellInboundWebhookPayload,
-  ): Promise<RetellTypes.RetellInboundWebhookResponse> {
+  ): RetellTypes.RetellInboundWebhookResponse {
     this.logger.log(
       `Retell inbound webhook body: ${JSON.stringify(body, null, 2)}`,
     );
@@ -79,10 +70,10 @@ export class TwilioController {
   }
 
   @Post('call-status')
-  async callStatus(
+  callStatus(
     @Body() body: Record<string, string>,
     @Res() res: express.Response,
-  ): Promise<void> {
+  ): void {
     this.logger.log(`Call status: ${body.CallStatus} for ${body.CallSid}`);
     res.sendStatus(200);
   }

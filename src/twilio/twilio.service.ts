@@ -9,7 +9,9 @@ export class TwilioService {
     const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
     const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
 
-    this.logger.log(`Twilio init: SID=${accountSid ? accountSid.substring(0, 6) + '...' : 'MISSING'}, Token=${authToken ? authToken.substring(0, 4) + '...' : 'MISSING'}`);
+    this.logger.log(
+      `Twilio init: SID=${accountSid ? accountSid.substring(0, 6) + '...' : 'MISSING'}, Token=${authToken ? authToken.substring(0, 4) + '...' : 'MISSING'}`,
+    );
 
     if (!accountSid || !authToken) {
       this.logger.warn('Twilio credentials not configured');
@@ -17,7 +19,8 @@ export class TwilioService {
   }
 
   shouldRouteToAI(): boolean {
-    const useBusinessHours = this.configService.get<string>('USE_BUSINESS_HOURS') === 'true';
+    const useBusinessHours =
+      this.configService.get<string>('USE_BUSINESS_HOURS') === 'true';
     if (!useBusinessHours) {
       return true;
     }
