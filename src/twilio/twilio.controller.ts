@@ -50,6 +50,10 @@ export class TwilioController {
   async retellCallEnded(
     @Body() body: RetellTypes.RetellCallEndedWebhookPayload,
   ): Promise<void> {
+    if (body.event !== 'call_ended') {
+      return;
+    }
+
     this.logger.log(
       `Retell call ended: reason=${body.call.disconnection_reason}`,
     );

@@ -45,7 +45,12 @@ export interface RetellCallEndedCall {
   transfer_destination?: string;
 }
 
+export type RetellCallWebhookEvent =
+  | 'call_started'
+  | 'call_ended'
+  | 'call_analyzed';
+
 export interface RetellCallEndedWebhookPayload {
-  event: 'call_ended';
+  event: RetellCallWebhookEvent;
   call: RetellCallEndedCall;
 }
